@@ -1,0 +1,9 @@
+{
+  "engine": "cocos-creator-js",
+  "packages": "packages",
+  "name": "WhackAMole",
+  "uuid": "9858ea68-1590-4e73-b678-5504c35f3afb",
+  "version": "2.3.3",
+  "id": "043eb8cb-caac-4a30-9cf5-c1ba781f049e",
+  "isNew": false
+}
