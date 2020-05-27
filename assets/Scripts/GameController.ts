@@ -15,6 +15,29 @@ export default class GameController extends cc.Component
     @property([Mole])
     moles: Mole[] = [];
 
+    private playerId: string = null;
+
+    onLoad()
+    {
+        for (let i = 0; i < this.moles.length; i++)
+        {
+            this.moles[i].setId(i);
+        }
+    }
+
+    start()
+    {
+        let xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && (xhr.status >= 200 && xhr.status < 400)) {
+                var response = xhr.responseText;
+                console.log(response);
+            }
+        };
+        xhr.open("GET", "http://localhost:3000/", true);
+        xhr.send();
+    }
+
     // Cập nhật mạng:
     // sửa canHit của Mole nào đó thành false nếu Opponent đã click trước.
 
@@ -28,16 +51,21 @@ export default class GameController extends cc.Component
 
     }
 
-    public initMoles(moleData: MoleData[])
+    public initMoles(moleData: MoleData)
     {
-        for (let i = 0; i < moleData.length; i++)
-        {
-            this.moles[i].init(moleData[i].timeAppears);
-        }
+        let id = moleData.modeId;
+        if (id < 0 || id > this.moles.length)
+            return;
+
+        let mole = this.moles[id];
+
+        if (mole)
+            mole.setTime(moleData.timeAppears);
     }
 }
 
 export class MoleData
 {
-    public timeAppears: number[] = [];
+    public modeId: number = -1;
+    public timeAppears: number = -1;
 }

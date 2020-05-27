@@ -8,11 +8,15 @@
 import Player from "./Player";
 
 const { ccclass, property } = cc._decorator;
+enum MoleAnimations { Wait, MoleUp, MoleDown, MoleHit }
 
 @ccclass
 export default class Mole extends cc.Component
 {
+    private static readonly MOLE_HIT_EVENT = "MOLE_HIT_EVENT";
+    
     public canHit = false;
+    public moleId: number = -1;
 
     @property(cc.Sprite)
     sprite: cc.Sprite = null;
@@ -24,18 +28,15 @@ export default class Mole extends cc.Component
     private _minTimeAppear = 4;
     private timeAppear = 0;
 
-    private static readonly MOLE_ANIM_UP = "MoleUp";
-    private static readonly MOLE_ANIM_DOWN = "MoleDown";
-    private static readonly MOLE_ANIM_HIT = "MoleHit";
-    private static readonly MOLE_ANIM_NONE = "";
-    private currentAnimation: string = "";
+    private currentAnimation: MoleAnimations = MoleAnimations.Wait;
 
     onLoad()
     {
-        this.randomTimeAppear();
         this.node.on(cc.Node.EventType.TOUCH_START, this.tryToHitMole, this);
         this.animation.on(cc.Animation.EventType.FINISHED, this.nextAnimation, this);
-        this.playAnimation(Mole.MOLE_ANIM_NONE);
+
+        this.waitForServerCommand();
+        this.playAnimation(MoleAnimations.Wait);
     }
 
     onDestroy()
@@ -49,72 +50,85 @@ export default class Mole extends cc.Component
         this.timeAppear -= dt;
         if (this.timeAppear <= 0)
         {
-            this.moleUp();
+            this.playAnimation(MoleAnimations.MoleUp);
+            this.waitForServerCommand();
         }
     }
 
-    public init(timeAppears: number[])
+    public setId(id: number)
     {
-        
+        this.moleId = id;
     }
 
-    public moleIsReadyToGetHit()
+    public setTime(timeAppear: number)
+    {
+        this.timeAppear = timeAppear;
+    }
+
+    //#region Animation Event Call
+
+    private moleIsReadyToGetHit()
     {
         this.canHit = true;
     }
 
-    public moleIsEscaped()
+    private moleIsEscaped()
     {
         this.canHit = false;
     }
 
-    private nextAnimation()
-    {
-        switch (this.currentAnimation)
-        {
-            case Mole.MOLE_ANIM_UP:
-                this.playAnimation(Mole.MOLE_ANIM_DOWN);
-                break;
-
-            case Mole.MOLE_ANIM_DOWN:
-            case Mole.MOLE_ANIM_HIT:
-                this.playAnimation(Mole.MOLE_ANIM_NONE);
-                break;
-        }
-    }
-
-    private moleUp()
-    {
-        this.timeAppear = 999;
-        this.playAnimation(Mole.MOLE_ANIM_UP);
-    }
-
+    //#endregion
+    
     private tryToHitMole()
     {
         if (this.canHit)
         {
             Player.You.addScore(this.name);
-            this.timeAppear = 999;
-            this.playAnimation(Mole.MOLE_ANIM_HIT);
+            this.playAnimation(MoleAnimations.MoleHit);
         }
     }
 
-    private playAnimation(animationName: string)
+    //#region Play Animation
+
+    private nextAnimation()
+    {
+        switch (this.currentAnimation)
+        {
+            case MoleAnimations.MoleUp:
+                this.playAnimation(MoleAnimations.MoleDown);
+                break;
+
+            case MoleAnimations.MoleDown:
+            case MoleAnimations.MoleHit:
+                this.playAnimation(MoleAnimations.Wait);
+                break;
+        }
+    }
+
+    
+
+    private playAnimation(animationName: MoleAnimations)
     {
         this.currentAnimation = animationName;
-        if (animationName !== Mole.MOLE_ANIM_NONE)
+        if (animationName !== MoleAnimations.Wait)
         {
-            this.animation.play(this.currentAnimation);
+            this.animation.play(MoleAnimations[this.currentAnimation]);
         }
         else
         {
             this.sprite.spriteFrame = null;
-            this.randomTimeAppear();
         }
     }
+
+    //#endregion
 
     private randomTimeAppear()
     {
         this.timeAppear = (Math.random() * (this._maxTimeAppear - this._minTimeAppear)) + this._minTimeAppear;
+    }
+
+    private waitForServerCommand()
+    {
+        this.timeAppear = 9999;
     }
 }
