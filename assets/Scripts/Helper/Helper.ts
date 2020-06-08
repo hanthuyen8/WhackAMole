@@ -99,6 +99,14 @@ export class Helper
         let thisTime = new Date();
         return `${thisTime.getHours}${thisTime.getMinutes}${thisTime.getSeconds}${thisTime.getMilliseconds}`;
     }
+
+    public static stringIsEmpty(str: string)
+    {
+        if (!str || str.length === 0)
+            return true;
+        
+        return false;
+    }
 }
 
 /**
@@ -129,7 +137,7 @@ export default class Assert
      */
     public static isNotEmpty(sender: cc.Node, obj: any[]): boolean
     {
-        if(CC_DEBUG && (!obj || obj.length == 0))
+        if (CC_DEBUG && (!obj || obj.length == 0))
         {
             cc.log(sender);
             throw new Error("Array bị rỗng: Sender: " + sender.name);

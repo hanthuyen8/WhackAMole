@@ -1,7 +1,7 @@
 {
   "title": "WhackAMole",
   "packageName": "org.cocos2d.demo",
-  "startScene": "1a39279d-913a-4187-b62a-b2352102817d",
+  "startScene": "efa2c890-ce3e-4e9f-8916-4719a7cb8bb5",
   "excludeScenes": [],
   "includeSDKBox": false,
   "orientation": {

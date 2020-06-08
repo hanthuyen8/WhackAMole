@@ -7,7 +7,7 @@
 
 import Assert from "../Helper/Helper";
 import NetworkController, { NetworkRequest } from "../NetworkController";
-import { RegisterRequest, RegisterResponse } from "../Network/DataTypes";
+import { CTS_Register, STC_Register } from "../Network/DataTypes";
 
 const { ccclass, property } = cc._decorator;
 
@@ -37,25 +37,23 @@ export default class LoginScene extends cc.Component
         let nickName = this.inputBox.string;
         if (nickName.length > 0)
         {
-            let data = new RegisterRequest(nickName);
+            let data = new CTS_Register(nickName);
             NetworkController.Instance.sendRequest(NetworkRequest.Register, JSON.stringify(data), (response) => this.receiveRegisterResponse(response));
         }
     }
 
     private receiveRegisterResponse(response: string)
     {
-        if (response && response.length > 0)
+        let responseData = STC_Register.tryParse(response);
+        if (response)
         {
-            let responseData = JSON.parse(response) as RegisterResponse;
-            if (responseData.message)
-                this.infoLabel.string = responseData.message;
-
+            this.infoLabel.string = responseData.message;
             if (responseData.success)
             {
                 cc.director.loadScene("Lobby");
             }
-        }
 
-        this.loginButton.interactable = true;
+            this.loginButton.interactable = true;
+        }
     }
 }

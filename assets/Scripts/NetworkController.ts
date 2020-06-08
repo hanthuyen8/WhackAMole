@@ -1,6 +1,8 @@
-import ClientRequestData from "./Network/DataTypes";
+import BaseRequest from "./Network/DataTypes";
+import MessageBox from "./UI/MessageBox";
+import Assert from "./Helper/Helper";
 
-export enum NetworkRequest { Register, GetIdlePlayers }
+export enum NetworkRequest { Register, GetIdlePlayers, Challenge }
 
 const { ccclass, property } = cc._decorator;
 const client = new WebSocket("ws://localhost:55555");
@@ -8,18 +10,33 @@ const client = new WebSocket("ws://localhost:55555");
 @ccclass
 export default class NetworkController extends cc.Component
 {
-    public static get Instance(): NetworkController { return this._instance; }
+    public static get Instance(): NetworkController { return this.instance; }
+    private static instance: NetworkController = null;
+
+    public get MessageBox(): MessageBox
+    {
+        if (this._messageBox == null || !cc.isValid(this._messageBox))
+        {
+            let no = cc.instantiate(this.messageBoxPrefab);
+            no.parent = cc.Canvas.instance.node;
+            no.setSiblingIndex(999);
+            this._messageBox = no.getComponent(MessageBox);
+        }
+        return this._messageBox;
+    }
+
+    @property(cc.Prefab)
+    private messageBoxPrefab: cc.Prefab = null;
 
     private awaitingRequest: Map<NetworkRequest, Function> = new Map;
-
-    private static _instance: NetworkController = null;
+    private _messageBox: MessageBox = null;
 
     onLoad()
     {
         // Singleton
-        if (NetworkController._instance == null)
+        if (NetworkController.instance == null)
         {
-            NetworkController._instance = this;
+            NetworkController.instance = this;
             cc.game.addPersistRootNode(this.node);
         }
         else
@@ -28,8 +45,19 @@ export default class NetworkController extends cc.Component
             return;
         }
 
+        this.assertions();
+
         // Open Socket
         client.onmessage = (message: MessageEvent) => this.receiveMessage(message);
+    }
+
+    private assertions()
+    {
+        if (!CC_DEBUG)
+            return;
+
+        Assert.isNotNull(this.node, this.messageBoxPrefab);
+        Assert.isTrue(this.node, this.messageBoxPrefab.data.getComponent(MessageBox) != null);
     }
 
     public sendRequest(type: NetworkRequest, data: string, callback: (message: string) => void)
@@ -38,8 +66,31 @@ export default class NetworkController extends cc.Component
         {
             if (!this.awaitingRequest.has(type))
             {
-                let request = new ClientRequestData(NetworkRequest[type], data);
+                let request = new BaseRequest(NetworkRequest[type], data);
                 client.send(JSON.stringify(request));
+
+                if (callback != null)
+                    this.awaitingRequest.set(type, callback);
+                
+                cc.log(request);
+            }
+            else
+            {
+                callback("Đang chờ tín hiệu.")
+            }
+        }
+        else
+        {
+            callback("Network có vấn đề.")
+        }
+    }
+
+    public waitForMessage(type: NetworkRequest, callback: (message: string) => void)
+    {
+        if (client.readyState === WebSocket.OPEN)
+        {
+            if (!this.awaitingRequest.has(type))
+            {
                 this.awaitingRequest.set(type, callback);
             }
             else
@@ -58,7 +109,7 @@ export default class NetworkController extends cc.Component
         if (!message)
             return;
 
-        let responseData = JSON.parse(message.data) as ClientRequestData;
+        let responseData = JSON.parse(message.data) as BaseRequest;
         if (!responseData.action)
             return;
 
@@ -71,6 +122,10 @@ export default class NetworkController extends cc.Component
 
             case NetworkRequest[NetworkRequest.GetIdlePlayers]:
                 requestId = NetworkRequest.GetIdlePlayers;
+                break;
+
+            case NetworkRequest[NetworkRequest.Challenge]:
+                requestId = NetworkRequest.Challenge;
                 break;
         }
 

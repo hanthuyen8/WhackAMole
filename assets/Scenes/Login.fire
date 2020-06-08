@@ -23,7 +23,7 @@
         "__id__": 6
       }
     ],
-    "_active": true,
+    "_active": false,
     "_components": [],
     "_prefab": null,
     "_opacity": 255,
@@ -367,7 +367,7 @@
       "array": [
         0,
         0,
-        366.32874580081756,
+        541.2658773652742,
         0,
         0,
         0,
@@ -402,9 +402,9 @@
     "_clearFlags": 7,
     "_backgroundColor": {
       "__type__": "cc.Color",
-      "r": 105,
-      "g": 53,
-      "b": 53,
+      "r": 0,
+      "g": 0,
+      "b": 0,
       "a": 255
     },
     "_depth": -1,
@@ -1386,6 +1386,9 @@
       "__id__": 30
     },
     "_enabled": true,
+    "messageBoxPrefab": {
+      "__uuid__": "38dc40b2-c572-4483-af16-4079bd80a3b6"
+    },
     "_id": "7eRjRyg0hPQJ31KtalA3jm"
   }
 ]
