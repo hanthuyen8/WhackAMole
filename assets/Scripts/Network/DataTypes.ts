@@ -1,5 +1,7 @@
 import { Helper } from "../Helper/Helper"
 
+export enum NetworkRequest { Register, GetIdlePlayers, Challenge, StartGame }
+
 export default class BaseRequest
 {
     public action: string;
@@ -91,7 +93,7 @@ export class STC_GetIdlePlayers
 }
 //#endregion
 
-//#region Game Data
+//#region Challenge
 export class CTS_ChallengeTo
 {
     public otherPlayerName: string = "";
@@ -172,5 +174,17 @@ export class CTS_ChallengeFrom
 
         return data;
     }
+}
+//#endregion
+
+//#region Start Game
+export class MatchData
+{
+    public matchId: string;
+    public playerA: string;
+    public playerAScore: number = 0;
+
+    public playerB: string
+    public playerBScore: number = 0;
 }
 //#endregion

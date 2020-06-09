@@ -6,9 +6,6 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import Assert from "../Helper/Helper";
-import NetworkController, { NetworkRequest } from "../NetworkController";
-import { CTS_ChallengeTo, STC_ChallengeTo } from "../Network/DataTypes";
-import MessageBox from "../UI/MessageBox";
 import Lobby from "./Lobby";
 
 const { ccclass, property } = cc._decorator;

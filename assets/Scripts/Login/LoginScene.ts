@@ -6,8 +6,8 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import Assert from "../Helper/Helper";
-import NetworkController, { NetworkRequest } from "../NetworkController";
-import { CTS_Register, STC_Register } from "../Network/DataTypes";
+import NetworkController from "../NetworkController";
+import { CTS_Register, STC_Register, NetworkRequest } from "../Network/DataTypes";
 
 const { ccclass, property } = cc._decorator;
 

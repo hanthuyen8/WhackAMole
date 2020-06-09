@@ -6,10 +6,9 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import Assert from "../Helper/Helper";
-import NetworkController, { NetworkRequest } from "../NetworkController";
-import { STC_GetIdlePlayers, STC_ChallengeFrom, CTS_ChallengeFrom, STC_ChallengeTo, CTS_ChallengeTo } from "../Network/DataTypes";
+import NetworkController from "../NetworkController";
+import { STC_GetIdlePlayers, STC_ChallengeFrom, CTS_ChallengeFrom, STC_ChallengeTo, CTS_ChallengeTo, NetworkRequest } from "../Network/DataTypes";
 import LobbyPlayerUI from "./LobbyPlayerUI";
-import MessageBox from "../UI/MessageBox";
 
 const { ccclass, property } = cc._decorator;
 
@@ -85,11 +84,7 @@ export default class Lobby extends cc.Component
 
     private challengeResponse(data: STC_ChallengeTo)
     {
-        if (data.success)
-        {
-            cc.director.loadScene("Game");
-        }
-        else
+        if (!data.success)
         {
             this.networkController.MessageBox.showInfo(data.message);
         }

@@ -1,8 +1,6 @@
-import BaseRequest from "./Network/DataTypes";
+import BaseRequest, { NetworkRequest } from "./Network/DataTypes";
 import MessageBox from "./UI/MessageBox";
 import Assert from "./Helper/Helper";
-
-export enum NetworkRequest { Register, GetIdlePlayers, Challenge }
 
 const { ccclass, property } = cc._decorator;
 const client = new WebSocket("ws://localhost:55555");
@@ -46,18 +44,15 @@ export default class NetworkController extends cc.Component
         }
 
         this.assertions();
-
-        // Open Socket
-        client.onmessage = (message: MessageEvent) => this.receiveMessage(message);
+        this.listenToNetwork(null);
     }
 
-    private assertions()
+    public listenToNetwork(handler: (message: MessageEvent) => void)
     {
-        if (!CC_DEBUG)
-            return;
-
-        Assert.isNotNull(this.node, this.messageBoxPrefab);
-        Assert.isTrue(this.node, this.messageBoxPrefab.data.getComponent(MessageBox) != null);
+        if (handler != null)
+            client.onmessage = (message: MessageEvent) => handler(message);
+        else
+            client.onmessage = (message: MessageEvent) => this.messageReceived(message);
     }
 
     public sendRequest(type: NetworkRequest, data: string, callback: (message: string) => void)
@@ -71,7 +66,7 @@ export default class NetworkController extends cc.Component
 
                 if (callback != null)
                     this.awaitingRequest.set(type, callback);
-                
+
                 cc.log(request);
             }
             else
@@ -104,7 +99,7 @@ export default class NetworkController extends cc.Component
         }
     }
 
-    private receiveMessage(message: MessageEvent)
+    private messageReceived(message: MessageEvent)
     {
         if (!message)
             return;
@@ -127,6 +122,11 @@ export default class NetworkController extends cc.Component
             case NetworkRequest[NetworkRequest.Challenge]:
                 requestId = NetworkRequest.Challenge;
                 break;
+
+            case NetworkController[NetworkRequest.StartGame]:
+                this.awaitingRequest.clear();
+                cc.director.loadScene("Game");
+                break;
         }
 
         if (requestId >= 0)
@@ -138,5 +138,14 @@ export default class NetworkController extends cc.Component
                 this.awaitingRequest.delete(requestId);
             }
         }
+    }
+
+    private assertions()
+    {
+        if (!CC_DEBUG)
+            return;
+
+        Assert.isNotNull(this.node, this.messageBoxPrefab);
+        Assert.isTrue(this.node, this.messageBoxPrefab.data.getComponent(MessageBox) != null);
     }
 }
